@@ -14,11 +14,18 @@ export function getAiProvider(): AiProvider {
 
   switch (provider) {
     case "openai": {
-      const apiKey = process.env.OPENAI_API_KEY
+      const baseURL = process.env.OPENAI_BASE_URL
+      // A custom baseURL means an OpenAI-compatible endpoint (Ollama, Groq…).
+      // Local Ollama needs no real key, so fall back to a placeholder there.
+      const apiKey = process.env.OPENAI_API_KEY ?? (baseURL ? "not-needed" : "")
       if (!apiKey) {
         throw new Error("OPENAI_API_KEY is not set")
       }
-      return new OpenAiProvider(apiKey, process.env.OPENAI_MODEL)
+      return new OpenAiProvider({
+        apiKey,
+        model: process.env.OPENAI_MODEL,
+        baseURL,
+      })
     }
     default:
       throw new Error(`Unsupported AI_PROVIDER: ${provider}`)
