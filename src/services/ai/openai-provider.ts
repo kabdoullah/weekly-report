@@ -35,10 +35,17 @@ export class OpenAiProvider implements AiProvider {
       ],
     })
 
-    return completion.choices[0]?.message?.content?.trim() ?? input.text
+    const raw = completion.choices[0]?.message?.content?.trim()
+    return raw ? stripWrappingQuotes(raw) : input.text
   }
 
   async rephraseTasks(inputs: RephraseInput[]): Promise<string[]> {
     return Promise.all(inputs.map((input) => this.rephraseTask(input)))
   }
+}
+
+/** Some models wrap their answer in quotes — remove a single surrounding pair. */
+function stripWrappingQuotes(text: string): string {
+  const match = text.match(/^["'«»“”]([\s\S]*)["'«»“”]$/)
+  return match ? match[1].trim() : text
 }
