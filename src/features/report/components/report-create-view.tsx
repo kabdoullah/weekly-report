@@ -45,7 +45,14 @@ export function ReportCreateView() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-semibold">Nouveau rapport</h1>
+      <div className="space-y-1 border-b border-border pb-3">
+        <p className="font-mono text-[0.7rem] uppercase tracking-[0.2em] text-muted-foreground">
+          Nouvelle entrée
+        </p>
+        <h1 className="font-display text-2xl font-semibold tracking-tight">
+          Nouveau rapport
+        </h1>
+      </div>
       {mounted ? (
         <ReportForm
           defaultValues={defaultValues}

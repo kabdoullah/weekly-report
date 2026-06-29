@@ -52,8 +52,15 @@ export function ReportEditView({ id }: { id: string }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="text-xl font-semibold">Modifier le rapport</h1>
+      <div className="flex items-center justify-between gap-4 border-b border-border pb-3">
+        <div className="space-y-1">
+          <p className="font-mono text-[0.7rem] uppercase tracking-[0.2em] text-muted-foreground">
+            Édition
+          </p>
+          <h1 className="font-display text-2xl font-semibold tracking-tight">
+            Modifier le rapport
+          </h1>
+        </div>
         <div className="flex gap-2">
           <Button
             variant="outline"
