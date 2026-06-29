@@ -47,6 +47,11 @@ export function run(text: string, style: RunStyle): string {
   )
 }
 
+/** A line break sized at `sz` (hundredths of a point) — adds a blank line. */
+export function lineBreak(sz: number): string {
+  return `<a:br><a:rPr lang="fr-FR" sz="${sz}"/></a:br>`
+}
+
 export type Bullet = "square" | "dot" | "none"
 
 function bulletXml(bullet: Bullet): string {

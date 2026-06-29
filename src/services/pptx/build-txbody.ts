@@ -6,7 +6,7 @@ import {
 } from "@/features/report/types/report.schema"
 import { formatDate, formatWeekRange } from "@/lib/week"
 
-import { paragraph, run, type Fill, type RunStyle } from "./xml"
+import { lineBreak, paragraph, run, type Fill, type RunStyle } from "./xml"
 
 /**
  * Builds the paragraph XML for each dynamic shape of the template slide.
@@ -46,15 +46,20 @@ export function buildWeekHeader(
 /** Header block: Département / Intervenant(s) / Comité Direction. */
 export function buildTitle(report: Report): string {
   const { department, name, weekEnd } = report.meta
-  const line = (labelText: string, value: string) =>
-    paragraph(run(labelText, titleLabel) + run(` : ${value}`, titleValue), {
-      align: "l",
-    })
+  // A trailing break adds a blank line between entries; the last line omits it
+  // so the block (anchored bottom) fits inside the banner — matching the model.
+  const line = (labelText: string, value: string, spacer: boolean) =>
+    paragraph(
+      run(labelText, titleLabel) +
+        run(` : ${value}`, titleValue) +
+        (spacer ? lineBreak(1400) : ""),
+      { align: "l" }
+    )
 
   return (
-    line("Département", department) +
-    line("Intervenant(s)", name) +
-    line("Comité Direction", formatDate(weekEnd))
+    line("Département", department, true) +
+    line("Intervenant(s)", name, true) +
+    line("Comité Direction", formatDate(weekEnd), false)
   )
 }
 
