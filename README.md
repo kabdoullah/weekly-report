@@ -174,7 +174,7 @@ est la **source de vérité unique** : tous les types TypeScript en dérivent.
 
 > ⚠️ L'app **n'est pas compatible serverless** (Vercel/Netlify) : elle a besoin
 > de LibreOffice et d'un disque persistant. On déploie un **conteneur Docker**
-> (Railway, Render, Fly.io, VPS, NAS…).
+> (Fly.io, VPS, NAS, Render…).
 
 L'image embarque LibreOffice, le binaire natif `better-sqlite3`, le modèle
 `templates/weekly-report.pptx` et le serveur Next en mode `standalone`. Les
@@ -190,17 +190,24 @@ docker run -d -p 3000:3000 -v weekly-data:/app/data \
   --env-file .env.local weekly-report
 ```
 
-### Railway
+### Fly.io
 
-1. Nouveau projet → *Deploy from GitHub repo* (Railway détecte le `Dockerfile`).
-2. Ajouter un **Volume** monté sur `/app/data` (persistance de la base SQLite).
-3. Variables d'environnement : config IA (`OPENAI_BASE_URL`, `OPENAI_MODEL`,
-   `OPENAI_API_KEY`) si la reformulation est souhaitée. `PORT` est fourni par
-   Railway et respecté automatiquement.
-4. Déployer. La config est dans `railway.toml`.
+Config dans `fly.toml` (build via le `Dockerfile`, volume `/app/data`, 1 Go RAM).
 
-> LibreOffice consomme de la RAM à la conversion : prévoir un plan avec assez de
-> mémoire (≥ 1 Go conseillé).
+```bash
+fly launch --no-deploy          # ajuste app/region (réutilise fly.toml)
+fly volumes create weekly_data --size 1   # disque persistant (SQLite)
+fly secrets set OPENAI_BASE_URL=... OPENAI_MODEL=... OPENAI_API_KEY=...  # IA (optionnel)
+fly deploy
+```
+
+Notes :
+- L'app écoute sur le port `3000` (`internal_port` dans `fly.toml`).
+- `auto_stop_machines` met la machine en veille à l'inactivité (coût minimal) ;
+  premier accès = léger cold start.
+- **Une seule machine** : le volume SQLite est attaché à une instance
+  (`fly scale count 1`). Pas de réplication multi-région.
+- LibreOffice consomme de la RAM à la conversion → garder ≥ 1 Go.
 
 ## Limites connues
 
