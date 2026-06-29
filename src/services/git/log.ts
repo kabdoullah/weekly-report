@@ -24,6 +24,12 @@ export interface GitLogParams {
 export async function getCommitSubjects(
   params: GitLogParams
 ): Promise<string[]> {
+  if (/^(https?:|git@|ssh:|git:)/i.test(params.repoPath.trim())) {
+    throw new Error(
+      "Entrez le chemin local du dépôt cloné, pas une URL (ex. /home/moi/projets/links)"
+    )
+  }
+
   const args = ["-C", params.repoPath, "log", "--no-merges", "--pretty=format:%s"]
   if (params.since) args.push(`--since=${params.since} 00:00:00`)
   if (params.until) args.push(`--until=${params.until} 23:59:59`)
