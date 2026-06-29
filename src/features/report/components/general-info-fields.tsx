@@ -44,6 +44,11 @@ export function GeneralInfoFields() {
         </Field>
       </div>
 
+      <p className="text-muted-foreground text-xs">
+        Ces informations sont mémorisées et pré-remplies pour vos prochains
+        rapports.
+      </p>
+
       <div className="bg-muted/40 flex flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <CalendarDaysIcon className="text-muted-foreground size-5" />
