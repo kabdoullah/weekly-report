@@ -35,24 +35,70 @@ JSZip (PPTX) · LibreOffice (PDF) · OpenAI.
 - **Node.js 20+** et **npm**.
 - **LibreOffice** installé et accessible (`soffice` dans le `PATH`) pour la
   conversion PDF. Vérifier avec `soffice --version`.
-- Une **clé OpenAI** (facultative — seulement pour la reformulation IA).
+- Un **fournisseur IA** (facultatif — seulement pour la reformulation). Gratuit
+  possible via Ollama ou Groq — voir [Reformulation IA](#reformulation-ia--options-gratuites).
 
 ## Installation
 
 ```bash
 npm install
-cp .env.example .env.local   # puis renseigner OPENAI_API_KEY
+cp .env.example .env.local   # puis configurer le fournisseur IA (facultatif)
 npm run dev                  # http://localhost:3000
 ```
 
 ### Variables d'environnement
 
-| Variable          | Rôle                                  | Défaut        |
-| ----------------- | ------------------------------------- | ------------- |
-| `AI_PROVIDER`     | Fournisseur IA actif                  | `openai`      |
-| `OPENAI_API_KEY`  | Clé OpenAI (côté serveur uniquement)  | —             |
-| `OPENAI_MODEL`    | Modèle utilisé                        | `gpt-4o-mini` |
-| `LIBREOFFICE_BIN` | Binaire LibreOffice si non standard   | `soffice`     |
+| Variable          | Rôle                                              | Défaut        |
+| ----------------- | ------------------------------------------------- | ------------- |
+| `AI_PROVIDER`     | Fournisseur IA actif                              | `openai`      |
+| `OPENAI_API_KEY`  | Clé API (côté serveur uniquement)                 | —             |
+| `OPENAI_MODEL`    | Modèle utilisé                                    | `gpt-4o-mini` |
+| `OPENAI_BASE_URL` | Endpoint compatible OpenAI (Ollama, Groq…)        | —             |
+| `LIBREOFFICE_BIN` | Binaire LibreOffice si non standard               | `soffice`     |
+
+## Reformulation IA — options gratuites
+
+La reformulation est **optionnelle** : sans configuration, toute l'app
+fonctionne, seuls les boutons « Reformuler » renvoient une erreur propre.
+
+Le fournisseur est **compatible OpenAI** : il suffit de pointer `OPENAI_BASE_URL`
+vers un endpoint compatible pour utiliser une solution gratuite, sans changer le
+code (voir `src/services/ai`).
+
+### Option A — Ollama (100 % local, gratuit, hors-ligne, privé)
+
+```bash
+ollama pull llama3.1            # ou un modèle plus léger : llama3.2:1b
+```
+
+```dotenv
+# .env.local
+OPENAI_BASE_URL=http://localhost:11434/v1
+OPENAI_MODEL=llama3.1
+OPENAI_API_KEY=ollama           # valeur factice, non vérifiée en local
+```
+
+### Option B — Groq (cloud, clé gratuite, aucune installation)
+
+Clé gratuite sur [console.groq.com](https://console.groq.com).
+
+```dotenv
+# .env.local
+OPENAI_BASE_URL=https://api.groq.com/openai/v1
+OPENAI_MODEL=llama-3.1-8b-instant
+OPENAI_API_KEY=gsk_...
+```
+
+### Option C — OpenAI (payant)
+
+```dotenv
+# .env.local
+OPENAI_API_KEY=sk-...
+OPENAI_MODEL=gpt-4o-mini
+```
+
+> La clé reste toujours côté serveur (route `/api/ai/rephrase`) et n'est jamais
+> exposée au navigateur. `.env.local` est ignoré par git.
 
 ## Scripts
 
