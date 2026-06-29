@@ -3,16 +3,25 @@ import OpenAI from "openai"
 import { buildRephraseUserPrompt, REPHRASE_SYSTEM_PROMPT } from "./prompt"
 import type { AiProvider, RephraseInput } from "./types"
 
+export interface OpenAiProviderOptions {
+  apiKey: string
+  model?: string
+  /** Override for OpenAI-compatible endpoints (Ollama, Groq, …). */
+  baseURL?: string
+}
+
 /**
- * OpenAI implementation of AiProvider. Server-side only — instantiated from the
- * factory in `./index.ts`. Never import this from client components.
+ * OpenAI-compatible implementation of AiProvider. Works with the OpenAI API and
+ * any compatible endpoint (Ollama, Groq, OpenRouter…) via `baseURL`. Server-side
+ * only — instantiated from the factory in `./index.ts`. Never import this from
+ * client components.
  */
 export class OpenAiProvider implements AiProvider {
   private readonly client: OpenAI
   private readonly model: string
 
-  constructor(apiKey: string, model = "gpt-4o-mini") {
-    this.client = new OpenAI({ apiKey })
+  constructor({ apiKey, model = "gpt-4o-mini", baseURL }: OpenAiProviderOptions) {
+    this.client = new OpenAI({ apiKey, baseURL })
     this.model = model
   }
 
