@@ -26,7 +26,7 @@ export function WeekInfoCard() {
             </p>
           </div>
         </div>
-        <Button render={<Link href="/reports/new" />}>
+        <Button nativeButton={false} render={<Link href="/reports/new" />}>
           <PlusIcon className="size-4" />
           Nouveau rapport
         </Button>

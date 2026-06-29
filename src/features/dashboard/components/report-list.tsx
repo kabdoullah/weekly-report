@@ -46,7 +46,7 @@ export function ReportList() {
               Créez votre premier rapport hebdomadaire.
             </p>
           </div>
-          <Button render={<Link href="/reports/new" />}>
+          <Button nativeButton={false} render={<Link href="/reports/new" />}>
             <PlusIcon className="size-4" />
             Nouveau rapport
           </Button>
