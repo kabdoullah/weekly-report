@@ -21,6 +21,7 @@ import { ImportCommitsDialog } from "@/features/git/components/import-commits-di
 import { cleanReportFormValues } from "../utils/report-factory"
 import { DayActionsBoard } from "./day-actions-board"
 import { GeneralInfoFields } from "./general-info-fields"
+import { NextWeekField } from "./next-week-field"
 
 // Defaults may omit fields that have Zod defaults (input type); the resolver
 // fills them so the submit handler receives the complete output type.
@@ -84,11 +85,7 @@ export function ReportForm({
         </Section>
 
         <Section title="Prévisions semaine prochaine">
-          <Textarea
-            rows={4}
-            placeholder={"Finalisation du module Thèmes\nTests fonctionnels avant recette"}
-            {...form.register("nextWeek")}
-          />
+          <NextWeekField />
         </Section>
 
         <div className="flex justify-end">

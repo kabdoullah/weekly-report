@@ -50,8 +50,20 @@ export function createEmptyReport(date: Date = new Date()): ReportInput {
     },
     days: emptyWeekDays(),
     nonConformities: "",
-    nextWeek: "",
+    nextWeek: [],
   }
+}
+
+/** Trim blocks, drop empty tasks, and remove fully-empty blocks. */
+function cleanBlocks(blocks: ReportFormValues["nextWeek"]): ActionBlock[] {
+  return blocks
+    .map((block) => ({
+      ...block,
+      project: block.project.trim(),
+      module: block.module.trim(),
+      tasks: block.tasks.map((t) => t.trim()).filter(Boolean),
+    }))
+    .filter((block) => block.project || block.module || block.tasks.length > 0)
 }
 
 /**
@@ -63,20 +75,8 @@ export function createEmptyReport(date: Date = new Date()): ReportInput {
 export function cleanReportFormValues(values: ReportFormValues): ReportInput {
   return {
     ...values,
-    days: values.days.map((day) => ({
-      ...day,
-      blocks: day.blocks
-        .map((block) => ({
-          ...block,
-          project: block.project.trim(),
-          module: block.module.trim(),
-          tasks: block.tasks.map((t) => t.trim()).filter(Boolean),
-        }))
-        .filter(
-          (block) => block.project || block.module || block.tasks.length > 0
-        ),
-    })),
+    days: values.days.map((day) => ({ ...day, blocks: cleanBlocks(day.blocks) })),
     nonConformities: values.nonConformities.trim(),
-    nextWeek: values.nextWeek.trim(),
+    nextWeek: cleanBlocks(values.nextWeek),
   }
 }
