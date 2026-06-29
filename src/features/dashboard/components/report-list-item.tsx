@@ -73,6 +73,7 @@ export function ReportListItem({ report }: { report: ReportSummary }) {
             variant="ghost"
             size="icon"
             aria-label="Ouvrir"
+            nativeButton={false}
             render={<Link href={`/reports/${report.id}`} />}
           >
             <EyeIcon className="size-4" />
