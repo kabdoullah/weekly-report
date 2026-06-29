@@ -8,7 +8,7 @@ export function SiteHeader() {
       <div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-4 sm:px-6">
         <Link href="/" className="group flex items-baseline gap-2.5">
           <span className="font-display text-lg font-semibold tracking-tight">
-            Carnet hebdo
+            Weekly report
           </span>
         </Link>
         <ThemeToggle />
