@@ -6,6 +6,7 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { downloadReport } from "@/features/report/api"
+import { useProfileStore } from "@/features/profile/store"
 import { FileIcon, FileType2Icon } from "lucide-react"
 
 import { useReport, useUpdateReport } from "../hooks/use-reports"
@@ -16,6 +17,7 @@ export function ReportEditView({ id }: { id: string }) {
   const router = useRouter()
   const { data, isPending, isError, error } = useReport(id)
   const update = useUpdateReport(id)
+  const setProfile = useProfileStore((s) => s.setProfile)
 
   if (isPending) {
     return (
@@ -42,6 +44,7 @@ export function ReportEditView({ id }: { id: string }) {
   }
 
   async function handleSubmit(input: ReportInput) {
+    setProfile(input.meta)
     await update.mutateAsync(input)
     toast.success("Rapport mis à jour")
     router.push("/")
