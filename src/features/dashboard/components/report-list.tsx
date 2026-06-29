@@ -1,10 +1,9 @@
 "use client"
 
 import Link from "next/link"
-import { FileBarChart2Icon, PlusIcon } from "lucide-react"
+import { PlusIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useReports } from "@/features/report/hooks/use-reports"
 
@@ -15,9 +14,15 @@ export function ReportList() {
 
   if (isPending) {
     return (
-      <div className="space-y-3">
+      <div className="divide-y divide-border overflow-hidden rounded-md border border-border bg-card">
         {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} className="h-17 w-full rounded-xl" />
+          <div key={i} className="flex items-center gap-4 px-4 py-3">
+            <Skeleton className="h-11 w-12 rounded-[4px]" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-4 w-40" />
+              <Skeleton className="h-3 w-56" />
+            </div>
+          </div>
         ))}
       </div>
     )
@@ -25,41 +30,39 @@ export function ReportList() {
 
   if (isError) {
     return (
-      <Card>
-        <CardContent className="text-destructive py-6 text-sm">
-          Erreur de chargement : {error.message}
-        </CardContent>
-      </Card>
+      <div className="rounded-md border border-destructive/30 bg-destructive/5 px-4 py-6 text-sm text-destructive">
+        Le chargement a échoué : {error.message}
+      </div>
     )
   }
 
   if (data.length === 0) {
     return (
-      <Card>
-        <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-          <div className="bg-muted text-muted-foreground flex size-12 items-center justify-center rounded-full">
-            <FileBarChart2Icon className="size-6" />
-          </div>
-          <div>
-            <p className="font-medium">Aucun rapport pour le moment</p>
-            <p className="text-muted-foreground text-sm">
-              Créez votre premier rapport hebdomadaire.
-            </p>
-          </div>
-          <Button nativeButton={false} render={<Link href="/reports/new" />}>
-            <PlusIcon className="size-4" />
-            Nouveau rapport
-          </Button>
-        </CardContent>
-      </Card>
+      <div className="flex flex-col items-center gap-4 rounded-md border border-dashed border-border bg-card px-6 py-14 text-center">
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
+          Carnet vide
+        </p>
+        <div className="space-y-1">
+          <p className="font-display text-lg font-medium">
+            Aucune semaine archivée
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Démarrez le rapport de cette semaine pour ouvrir le carnet.
+          </p>
+        </div>
+        <Button nativeButton={false} render={<Link href="/reports/new" />}>
+          <PlusIcon className="size-4" />
+          Nouveau rapport
+        </Button>
+      </div>
     )
   }
 
   return (
-    <div className="space-y-3">
+    <ul className="divide-y divide-border overflow-hidden rounded-md border border-border bg-card">
       {data.map((report) => (
         <ReportListItem key={report.id} report={report} />
       ))}
-    </div>
+    </ul>
   )
 }
