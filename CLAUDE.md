@@ -61,7 +61,7 @@ Strategy chosen: **template XML injection** (not pptxgenjs — the design lives 
 - `src/services/pdf/` — `convertPptxToPdf(buffer)` spawns `soffice --headless --convert-to pdf` in a temp dir with a per-call `UserInstallation` profile (safe under concurrency). Binary overridable via `LIBREOFFICE_BIN`.
 - **Editing the styles**: re-inspect a real `.pptx` (unzip → `ppt/slides/slide1.xml`); shape names there must match `SHAPE` in `template.ts`. If you swap the template asset, re-verify those names. Wingdings may render as a literal "q" under headless LibreOffice (font missing) — that's a viewer artifact, the markup matches the template.
 - Verified end to end (report → pptx → pdf, XML well-formed, LibreOffice renders the full design).
-- **Deploy note**: `templates/weekly-report.pptx` must ship with the server build (it's read from `process.cwd()`), and the host needs LibreOffice installed.
+- **Deploy note**: not serverless-compatible (needs LibreOffice + a persistent disk). Ships as a Docker image (`Dockerfile`, Next `output: "standalone"`) for Railway/VPS. `next.config.ts` sets `output: "standalone"`, `serverExternalPackages: ["better-sqlite3"]` (native module), and `outputFileTracingIncludes` for `templates/**`. Railway: build from Dockerfile (`railway.toml`) + a Volume mounted at `/app/data`.
 
 ## PPT generation — match the template
 
@@ -104,7 +104,7 @@ This project uses the shadcn **Base UI** registry, not Radix — primitives come
 
 ## Current scaffold layout
 - `src/features/{dashboard,report,ai}/{components,hooks,types,utils}` — feature code.
-- `src/services/{ai,pptx,pdf,storage}` — `ai` done (provider interface, `OpenAiProvider`, `getAiProvider()` factory gated by `AI_PROVIDER` env, `server-only`). `storage` done: filesystem JSON store at `data/reports/<id>.json` (gitignored), CRUD in `report-store.ts`, validates via Zod on read/write, `server-only`. `pptx`/`pdf` still empty.
+- `src/services/{ai,pptx,pdf,storage}` — `ai` done (provider interface, `OpenAiProvider`, `getAiProvider()` factory gated by `AI_PROVIDER` env, `server-only`). `storage` done: **SQLite** (`better-sqlite3`) one row per report (`db.ts` opens the connection at `DATABASE_PATH`, default `data/reports.db`), CRUD in `report-store.ts`, validates via Zod, `server-only`. Swappable (Postgres later) without touching callers.
 - `src/features/report/types/report.schema.ts` — the Zod source of truth (`reportSchema`, `reportInputSchema`, `reportSummarySchema`); all report types derive from it. `src/features/report/utils/report-factory.ts` — `createEmptyReport()` / `emptyWeekDays()` back the create screen and "Préremplir la semaine".
 - `src/lib/week.ts` — ISO week helpers (`getWeekInfo`, `getNextWeekInfo`, `formatWeekId` → "YYYY-WXX", `formatWeekRange`). Use these; don't hand-roll week math.
 - `src/providers/` — `Providers` wraps `ThemeProvider` (next-themes) + `QueryProvider` (TanStack); wired in `app/layout.tsx` with `<Toaster>`.

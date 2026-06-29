@@ -1,0 +1,12 @@
+# Railway builds straight from the Dockerfile.
+# Add a Volume in the Railway dashboard mounted at /app/data so the SQLite
+# database persists across deploys (DATABASE_PATH defaults to /app/data/reports.db).
+
+[build]
+builder = "dockerfile"
+
+[deploy]
+healthcheckPath = "/"
+healthcheckTimeout = 120
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3

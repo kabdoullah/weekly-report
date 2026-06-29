@@ -135,9 +135,10 @@ Nom de fichier généré : `AAAA-WXX_week_Weekly Report_Prénom NOM.pptx`
 
 ### Stockage
 
-Les rapports sont des fichiers JSON sous `data/reports/<id>.json` (ignoré par
-git). Validés par Zod à la lecture comme à l'écriture. C'est la source de vérité
-lue par la génération PPTX/PDF.
+Les rapports sont stockés dans une base **SQLite** (`DATABASE_PATH`, défaut
+`data/reports.db`), une ligne par rapport (JSON complet validé par Zod). C'est la
+source de vérité lue par la génération PPTX/PDF. La couche `services/storage` est
+*swappable* (un autre backend, ex. Postgres, se branche sans toucher aux appels).
 
 ## Architecture
 
@@ -171,8 +172,35 @@ est la **source de vérité unique** : tous les types TypeScript en dérivent.
 
 ## Déploiement
 
-Le serveur a besoin de LibreOffice installé, et `templates/weekly-report.pptx`
-doit être livré avec le build (lu depuis le répertoire de travail à l'exécution).
+> ⚠️ L'app **n'est pas compatible serverless** (Vercel/Netlify) : elle a besoin
+> de LibreOffice et d'un disque persistant. On déploie un **conteneur Docker**
+> (Railway, Render, Fly.io, VPS, NAS…).
+
+L'image embarque LibreOffice, le binaire natif `better-sqlite3`, le modèle
+`templates/weekly-report.pptx` et le serveur Next en mode `standalone`. Les
+données vivent dans un volume monté sur `/app/data`.
+
+### Docker (local ou VPS)
+
+```bash
+docker compose up -d --build       # http://localhost:3000
+# ou sans compose :
+docker build -t weekly-report .
+docker run -d -p 3000:3000 -v weekly-data:/app/data \
+  --env-file .env.local weekly-report
+```
+
+### Railway
+
+1. Nouveau projet → *Deploy from GitHub repo* (Railway détecte le `Dockerfile`).
+2. Ajouter un **Volume** monté sur `/app/data` (persistance de la base SQLite).
+3. Variables d'environnement : config IA (`OPENAI_BASE_URL`, `OPENAI_MODEL`,
+   `OPENAI_API_KEY`) si la reformulation est souhaitée. `PORT` est fourni par
+   Railway et respecté automatiquement.
+4. Déployer. La config est dans `railway.toml`.
+
+> LibreOffice consomme de la RAM à la conversion : prévoir un plan avec assez de
+> mémoire (≥ 1 Go conseillé).
 
 ## Limites connues
 
