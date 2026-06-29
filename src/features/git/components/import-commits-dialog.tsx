@@ -138,13 +138,16 @@ export function ImportCommitsDialog() {
 
         <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
           <div className="space-y-1.5">
-            <Label htmlFor="repo-path">Chemin du dépôt</Label>
+            <Label htmlFor="repo-path">Chemin local du dépôt</Label>
             <Input
               id="repo-path"
-              placeholder="/home/moi/projets/cerfam"
+              placeholder="/home/moi/projets/links"
               value={repoPath}
               onChange={(e) => setRepoPath(e.target.value)}
             />
+            <p className="text-muted-foreground text-xs">
+              Chemin du dépôt cloné sur la machine — pas une URL GitLab.
+            </p>
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="git-author">Auteur (optionnel)</Label>
