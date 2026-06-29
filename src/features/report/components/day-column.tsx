@@ -72,8 +72,7 @@ export function DayColumn({
             {fields.map((field, blockIndex) => (
               <SortableBlock key={field.fieldId} id={field.id}>
                 <ActionBlockField
-                  dayIndex={dayIndex}
-                  blockIndex={blockIndex}
+                  name={`days.${dayIndex}.blocks.${blockIndex}`}
                   onRemove={() => remove(blockIndex)}
                 />
               </SortableBlock>

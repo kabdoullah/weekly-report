@@ -68,8 +68,14 @@ export const reportSchema = z.object({
   days: z.array(dayActionsSchema),
   /** Free text; rendered as "RAS" when empty. */
   nonConformities: z.string().default(""),
-  /** Free text forecast for next week. */
-  nextWeek: z.string().default(""),
+  /**
+   * Forecast for next week, same block structure as a day's actions (no day
+   * split). `preprocess` migrates legacy reports where this was free text.
+   */
+  nextWeek: z.preprocess(
+    (v) => (typeof v === "string" ? [] : (v ?? [])),
+    z.array(actionBlockSchema)
+  ),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
 })
@@ -107,5 +113,6 @@ export const reportFormSchema = reportInputSchema.extend({
   days: z.array(
     dayActionsSchema.extend({ blocks: z.array(formBlockSchema) })
   ),
+  nextWeek: z.array(formBlockSchema),
 })
 export type ReportFormValues = z.infer<typeof reportFormSchema>

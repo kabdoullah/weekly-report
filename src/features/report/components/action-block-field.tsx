@@ -11,19 +11,18 @@ import { BlockTemplateMenu } from "@/features/templates/components/block-templat
 import type { ReportInput } from "../types/report.schema"
 import { TasksField } from "./tasks-field"
 
+/** Base path of a block, e.g. `days.0.blocks.2` or `nextWeek.1`. */
+export type BlockPath =
+  | `days.${number}.blocks.${number}`
+  | `nextWeek.${number}`
+
 interface ActionBlockFieldProps {
-  dayIndex: number
-  blockIndex: number
+  name: BlockPath
   onRemove: () => void
 }
 
-export function ActionBlockField({
-  dayIndex,
-  blockIndex,
-  onRemove,
-}: ActionBlockFieldProps) {
+export function ActionBlockField({ name: base, onRemove }: ActionBlockFieldProps) {
   const { control, register, setValue } = useFormContext<ReportInput>()
-  const base = `days.${dayIndex}.blocks.${blockIndex}` as const
 
   const project = useWatch({ control, name: `${base}.project` })
   const moduleName = useWatch({ control, name: `${base}.module` })

@@ -1,5 +1,6 @@
 import {
   WEEKDAY_LABELS,
+  type ActionBlock,
   type DayActions,
   type Report,
 } from "@/features/report/types/report.schema"
@@ -25,7 +26,6 @@ const titleLabel: RunStyle = { sz: 1400, bold: true, fill: WHITE }
 const titleValue: RunStyle = { sz: 1400, bold: false, fill: WHITE }
 const blockHeader: RunStyle = { sz: 1000, bold: true, fill: BLACK }
 const taskText: RunStyle = { sz: 1000, bold: false, fill: TASK_MUTED }
-const nextWeekText: RunStyle = { sz: 1000, bold: true, fill: BLACK }
 const nonConfText: RunStyle = { sz: 1050, bold: true, fill: BLACK }
 
 const EMPTY_DAY = "Aucune tâche assignée sur la période."
@@ -65,21 +65,8 @@ export function buildActions(days: DayActions[]): string {
   for (const { day, blocks } of days) {
     if (blocks.length === 0) continue
     const dayLabel = WEEKDAY_LABELS[day]
-
     for (const block of blocks) {
-      paragraphs.push(
-        paragraph(
-          run(`[${block.project}][${block.module}] - ${dayLabel}`, blockHeader),
-          { bullet: "square", indented: true }
-        )
-      )
-
-      const tasks = block.tasks.length > 0 ? block.tasks : [EMPTY_DAY]
-      for (const task of tasks) {
-        paragraphs.push(
-          paragraph(run(task, taskText), { bullet: "dot", indented: true })
-        )
-      }
+      paragraphs.push(...renderBlock(block, ` - ${dayLabel}`))
     }
   }
 
@@ -92,9 +79,25 @@ export function buildActions(days: DayActions[]): string {
   return paragraphs.join("")
 }
 
-/** Right column: free-text forecast for next week, one bullet per line. */
-export function buildNextWeek(text: string): string {
-  return buildBulletedText(text, nextWeekText)
+/** One block: a bold "[Projet][Module]<suffix>" header + its task bullets. */
+function renderBlock(block: ActionBlock, headerSuffix: string): string[] {
+  const out = [
+    paragraph(
+      run(`[${block.project}][${block.module}]${headerSuffix}`, blockHeader),
+      { bullet: "square", indented: true }
+    ),
+  ]
+  const tasks = block.tasks.length > 0 ? block.tasks : [EMPTY_DAY]
+  for (const task of tasks) {
+    out.push(paragraph(run(task, taskText), { bullet: "dot", indented: true }))
+  }
+  return out
+}
+
+/** Right column: next-week forecast, same block format as actions (no day). */
+export function buildNextWeek(blocks: ActionBlock[]): string {
+  if (blocks.length === 0) return paragraph("")
+  return blocks.flatMap((block) => renderBlock(block, "")).join("")
 }
 
 /** Non-conformities free text, one bullet per line ("RAS" when empty). */
