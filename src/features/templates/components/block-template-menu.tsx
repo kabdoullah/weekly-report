@@ -16,6 +16,7 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -67,30 +68,32 @@ export function BlockTemplateMenu({ current, onApply }: BlockTemplateMenuProps) 
           }
         />
         <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuLabel>Appliquer un modèle</DropdownMenuLabel>
-          {templates.length === 0 ? (
-            <DropdownMenuItem disabled>Aucun modèle</DropdownMenuItem>
-          ) : (
-            templates.map((t) => (
-              <DropdownMenuItem
-                key={t.id}
-                onClick={() => onApply(t)}
-                className="justify-between"
-              >
-                <span className="flex items-center gap-2 truncate">
-                  <BookmarkIcon className="size-3.5 shrink-0" />
-                  {t.name}
-                </span>
-                <Trash2Icon
-                  className="text-muted-foreground hover:text-destructive size-3.5 shrink-0"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    removeTemplate(t.id)
-                  }}
-                />
-              </DropdownMenuItem>
-            ))
-          )}
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>Appliquer un modèle</DropdownMenuLabel>
+            {templates.length === 0 ? (
+              <DropdownMenuItem disabled>Aucun modèle</DropdownMenuItem>
+            ) : (
+              templates.map((t) => (
+                <DropdownMenuItem
+                  key={t.id}
+                  onClick={() => onApply(t)}
+                  className="justify-between"
+                >
+                  <span className="flex items-center gap-2 truncate">
+                    <BookmarkIcon className="size-3.5 shrink-0" />
+                    {t.name}
+                  </span>
+                  <Trash2Icon
+                    className="text-muted-foreground hover:text-destructive size-3.5 shrink-0"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      removeTemplate(t.id)
+                    }}
+                  />
+                </DropdownMenuItem>
+              ))
+            )}
+          </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             disabled={!canSave}
