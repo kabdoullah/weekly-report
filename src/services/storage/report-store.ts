@@ -1,8 +1,6 @@
 import "server-only"
 
 import { randomUUID } from "node:crypto"
-import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises"
-import path from "node:path"
 
 import {
   reportInputSchema,
@@ -12,56 +10,52 @@ import {
   type ReportSummary,
 } from "@/features/report/types/report.schema"
 
+import { getDb } from "./db"
+
 /**
- * Filesystem JSON store: one `<id>.json` per report under `data/reports/`.
+ * SQLite-backed report store (one row per report, full JSON in `data`).
  * Server-only — the source of truth that PPTX/PDF generation reads from.
- * Swap this module for a DB later without touching callers (same signatures).
+ * Swap this module for another backend (Postgres…) without touching callers.
  */
 
-const DATA_DIR = path.join(process.cwd(), "data", "reports")
-
-async function ensureDir(): Promise<void> {
-  await mkdir(DATA_DIR, { recursive: true })
-}
-
-function fileFor(id: string): string {
-  // Guard against path traversal from a crafted id.
-  if (!/^[a-zA-Z0-9-]+$/.test(id)) {
-    throw new Error(`Invalid report id: ${id}`)
-  }
-  return path.join(DATA_DIR, `${id}.json`)
-}
-
-async function readReportFile(file: string): Promise<Report> {
-  const raw = await readFile(file, "utf8")
-  return reportSchema.parse(JSON.parse(raw))
+function parseRow(row: { data: string }): Report {
+  return reportSchema.parse(JSON.parse(row.data))
 }
 
 export async function listReports(): Promise<ReportSummary[]> {
-  await ensureDir()
-  const entries = await readdir(DATA_DIR)
-  const reports = await Promise.all(
-    entries
-      .filter((name) => name.endsWith(".json"))
-      .map((name) => readReportFile(path.join(DATA_DIR, name)))
-  )
+  const rows = getDb()
+    .prepare("SELECT data FROM reports ORDER BY updated_at DESC")
+    .all() as { data: string }[]
 
-  return reports
-    .map(({ id, meta, updatedAt }) => ({ id, meta, updatedAt }))
-    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+  return rows.map(parseRow).map(({ id, meta, updatedAt }) => ({
+    id,
+    meta,
+    updatedAt,
+  }))
 }
 
 export async function getReport(id: string): Promise<Report | null> {
-  try {
-    return await readReportFile(fileFor(id))
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return null
-    throw error
-  }
+  const row = getDb()
+    .prepare("SELECT data FROM reports WHERE id = ?")
+    .get(id) as { data: string } | undefined
+
+  return row ? parseRow(row) : null
+}
+
+function upsert(report: Report): void {
+  getDb()
+    .prepare(
+      `INSERT INTO reports (id, data, updated_at) VALUES (@id, @data, @updatedAt)
+       ON CONFLICT(id) DO UPDATE SET data = @data, updated_at = @updatedAt`
+    )
+    .run({
+      id: report.id,
+      data: JSON.stringify(report),
+      updatedAt: report.updatedAt,
+    })
 }
 
 export async function createReport(input: ReportInput): Promise<Report> {
-  await ensureDir()
   const data = reportInputSchema.parse(input)
   const now = new Date().toISOString()
   const report: Report = {
@@ -70,7 +64,7 @@ export async function createReport(input: ReportInput): Promise<Report> {
     createdAt: now,
     updatedAt: now,
   }
-  await writeFile(fileFor(report.id), JSON.stringify(report, null, 2), "utf8")
+  upsert(report)
   return report
 }
 
@@ -89,10 +83,10 @@ export async function updateReport(
     createdAt: existing.createdAt,
     updatedAt: new Date().toISOString(),
   }
-  await writeFile(fileFor(report.id), JSON.stringify(report, null, 2), "utf8")
+  upsert(report)
   return report
 }
 
 export async function deleteReport(id: string): Promise<void> {
-  await rm(fileFor(id), { force: true })
+  getDb().prepare("DELETE FROM reports WHERE id = ?").run(id)
 }

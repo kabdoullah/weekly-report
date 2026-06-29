@@ -1,0 +1,17 @@
+services:
+  weekly-report:
+    build: .
+    image: weekly-report
+    ports:
+      - "3000:3000"
+    # AI config (Ollama/Groq/OpenAI). Optional — omit to disable rephrasing.
+    env_file:
+      - path: .env.local
+        required: false
+    volumes:
+      # Persist the SQLite DB across restarts/redeploys.
+      - weekly-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  weekly-data:
