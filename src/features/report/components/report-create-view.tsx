@@ -14,11 +14,11 @@ import { ReportForm } from "./report-form"
 
 const emptySubscribe = () => () => {}
 
-export function ReportCreateView() {
+export function ReportCreateView({ accountName }: { accountName: string }) {
   const router = useRouter()
   const create = useCreateReport()
 
-  const { name, department, mainProject, setProfile } = useProfileStore()
+  const { department, mainProject, setProfile } = useProfileStore()
 
   // Profile lives in localStorage (client-only). Render after mount so the
   // pre-filled inputs don't trigger a hydration mismatch.
@@ -32,9 +32,9 @@ export function ReportCreateView() {
     const base = createEmptyReport()
     return {
       ...base,
-      meta: { ...base.meta, name, department, mainProject },
+      meta: { ...base.meta, name: accountName, department, mainProject },
     }
-  }, [name, department, mainProject])
+  }, [accountName, department, mainProject])
 
   async function handleSubmit(input: ReportInput) {
     setProfile(input.meta)

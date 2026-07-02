@@ -29,6 +29,25 @@ export function getDb(): Database.Database {
       updated_at TEXT NOT NULL
     );
     CREATE INDEX IF NOT EXISTS idx_reports_updated_at ON reports (updated_at DESC);
+
+    CREATE TABLE IF NOT EXISTS users (
+      id            TEXT PRIMARY KEY,
+      name          TEXT NOT NULL,
+      email         TEXT NOT NULL UNIQUE,
+      password_hash TEXT NOT NULL,
+      created_at    TEXT NOT NULL
+    );
   `)
+
+  // SQLite can't add a column conditionally in plain SQL — guard manually so
+  // this stays idempotent across cold starts on a pre-existing reports.db.
+  const hasUserId = (
+    db.pragma("table_info(reports)") as { name: string }[]
+  ).some((col) => col.name === "user_id")
+  if (!hasUserId) {
+    db.exec(`ALTER TABLE reports ADD COLUMN user_id TEXT REFERENCES users(id)`)
+  }
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_reports_user_id ON reports (user_id)`)
+
   return db
 }
