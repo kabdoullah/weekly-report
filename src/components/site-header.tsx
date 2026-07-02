@@ -1,6 +1,8 @@
 import Link from "next/link"
 
+import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { NotificationBell } from "@/features/notifications/components/notification-bell"
 
 export function SiteHeader() {
   return (
@@ -11,7 +13,26 @@ export function SiteHeader() {
             Weekly report
           </span>
         </Link>
-        <ThemeToggle />
+        <nav className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            nativeButton={false}
+            render={<Link href="/history" />}
+          >
+            Historique
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            nativeButton={false}
+            render={<Link href="/settings" />}
+          >
+            Paramètres
+          </Button>
+          <NotificationBell />
+          <ThemeToggle />
+        </nav>
       </div>
     </header>
   )

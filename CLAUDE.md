@@ -4,19 +4,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-Scaffolded, screens not built. Next.js 16.2 (App Router, `src/`) + React 19.2 + Tailwind v4 + shadcn/ui are installed; the feature-first skeleton, providers, and the AI abstraction (`src/services/ai`) exist. The 4 screens, PPTX/PDF services, storage, and Zod schemas are still TODO. The full product spec lives in the original `/init` request and is summarized below.
+Feature-complete for the non-negotiable spec: all 4 screens (Dashboard, Create/Edit, AI rephrase, PPTX/PDF generation), the API layer, SQLite storage, and the bonus features (profile, templates, drag & drop, Git import, dark mode) are implemented — see the "(implemented)" sections below. Docker/Fly.io deployment is also verified. Treat this file as the current source of truth over the "Project status" wording in any older commit message.
 
-A personal web app that generates a weekly activity report, replacing manual editing of a PowerPoint. It builds a `.pptx` with `pptxgenjs` that must reproduce an existing template exactly, then converts it to `.pdf` via the LibreOffice CLI.
+A personal web app that generates a weekly activity report, replacing manual editing of a PowerPoint. It builds the `.pptx` via template XML injection (not `pptxgenjs`, see "PPTX/PDF services") to reproduce an existing template exactly, then converts it to `.pdf` via the LibreOffice CLI.
 
 ## Stack (mandatory)
 
-Next.js 16 (App Router) · React 19 · TypeScript · TailwindCSS · shadcn/ui · React Hook Form · Zod · Zustand · TanStack Query (only if needed) · date-fns · pptxgenjs · OpenAI (behind an abstraction) · LibreOffice CLI for PDF.
+Next.js 16 (App Router) · React 19 · TypeScript · TailwindCSS · shadcn/ui (Base UI) · React Hook Form · Zod · Zustand · TanStack Query · date-fns · JSZip (PPTX via template injection — `pptxgenjs` is a dependency but not used for generation, see "PPTX/PDF services") · OpenAI (behind an abstraction) · LibreOffice CLI for PDF · better-sqlite3 for storage.
+
+No test framework is configured (no Jest/Vitest/Playwright, no `test` script) — verification is `npm run lint` + `npx tsc --noEmit` + manual/browser checks.
 
 ## Architecture conventions
 
 - **Feature-first** layout: group by feature (e.g. `features/report`, `features/dashboard`), not by technical type at the top level. Within a feature, separate `components/`, `hooks/`, `types/`, `utils/`.
 - **AI behind an abstraction**: all AI calls go through `services/ai` exposing a provider-agnostic interface. OpenAI is the first implementation; Claude must be swappable later with no caller changes. Never call the OpenAI SDK directly from components or hooks.
-- **PPTX/PDF generation runs server-side only** (Route Handlers / server actions). `pptxgenjs` output and the LibreOffice spawn must not be in client bundles. Keep the OpenAI key server-side.
+- **PPTX/PDF generation runs server-side only** (Route Handlers / server actions). The template-injection output and the LibreOffice spawn must not be in client bundles. Keep the OpenAI key server-side.
 - Reports persist as **JSON** (history must support reopen / edit / regenerate / export). Treat the report JSON shape as the single source of truth — define it once in Zod and derive TypeScript types from the schema.
 
 ## UI / data layer (implemented)
@@ -98,6 +100,18 @@ ISO week number, Monday and Friday of the current week, and the "Préremplir la 
 - `npm run lint` — ESLint (`eslint-config-next`).
 - `npx tsc --noEmit` — typecheck (no dedicated script).
 - Add shadcn components: `npx shadcn@latest add <name>` (Node 22, npm 10).
+- `soffice --version` — sanity-check the LibreOffice CLI is on `PATH` (required for PDF conversion).
+- `docker compose up -d --build` — build and run the full stack locally (LibreOffice + SQLite volume baked in); `fly deploy` ships it to the configured Fly.io app (see `fly.toml`, `Dockerfile`).
+
+### Env vars (`.env.local`, copy from `.env.example`)
+| Variable | Role | Default |
+| --- | --- | --- |
+| `AI_PROVIDER` | active AI provider | `openai` |
+| `OPENAI_API_KEY` | server-only API key | — |
+| `OPENAI_MODEL` | model name | `gpt-4o-mini` |
+| `OPENAI_BASE_URL` | OpenAI-compatible endpoint (e.g. Ollama, Groq) — lets you swap providers without code changes | — |
+| `DATABASE_PATH` | SQLite file path | `data/reports.db` |
+| `LIBREOFFICE_BIN` | LibreOffice binary if not on `PATH` as `soffice` | `soffice` |
 
 ## shadcn / UI notes
 This project uses the shadcn **Base UI** registry, not Radix — primitives come from `@base-ui/react`; icons come from `lucide-react`. The registry's `form` component fails to install non-interactively against this variant, so `src/components/ui/form.tsx` is a hand-written, Base-UI-compatible version (`FormControl` clones props onto its child instead of using a Slot). Match these when adding UI.

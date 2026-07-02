@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { downloadReport } from "@/features/report/api"
 import { useProfileStore } from "@/features/profile/store"
+import { SendReportDialog } from "@/features/email/components/send-report-dialog"
 import { FileIcon, FileType2Icon } from "lucide-react"
 
 import { useReport, useUpdateReport } from "../hooks/use-reports"
@@ -81,6 +82,7 @@ export function ReportEditView({ id }: { id: string }) {
             <FileType2Icon className="size-4" />
             PDF
           </Button>
+          <SendReportDialog report={data} />
         </div>
       </div>
 
