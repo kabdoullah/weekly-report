@@ -89,7 +89,7 @@ function renderBlock(block: ActionBlock, headerSuffix: string): string[] {
   const out = [
     paragraph(
       run(`[${block.project}][${block.module}]${headerSuffix}`, blockHeader),
-      { bullet: "square", indented: true }
+      { bullet: "none", indented: true }
     ),
   ]
   const tasks = block.tasks.length > 0 ? block.tasks : [EMPTY_DAY]

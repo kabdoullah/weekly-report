@@ -54,12 +54,12 @@ export async function generatePptx(report: Report): Promise<GeneratedPptx> {
   slideXml = replaceShapeParagraphs(
     slideXml,
     SHAPE.headerLeft,
-    buildWeekHeader(meta.weekStart, meta.weekEnd, "Semaine N")
+    buildWeekHeader(meta.weekStart, meta.weekEnd, `Semaine ${meta.weekNumber}`)
   )
   slideXml = replaceShapeParagraphs(
     slideXml,
     SHAPE.headerRight,
-    buildWeekHeader(next.weekStart, next.weekEnd, "Semaine N+1")
+    buildWeekHeader(next.weekStart, next.weekEnd, `Semaine ${next.weekNumber}`)
   )
   slideXml = replaceShapeParagraphs(
     slideXml,
