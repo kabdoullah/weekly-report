@@ -93,7 +93,7 @@ Spawn this from the server after writing the pptx. It needs a writable working d
 ISO week number, Monday and Friday of the current week, and the "Préremplir la semaine" action (auto-create Lundi…Vendredi) are core. Use `date-fns` ISO helpers; do not hand-roll week arithmetic.
 
 ## Commands
-- `npm run dev` — dev server (Webpack; scaffolded with `--no-turbopack`).
+- `npm run dev` — dev server (Webpack, via `--webpack`; this Next version renamed the old `--no-turbopack` flag).
 - `npm run build` / `npm start` — production build / serve.
 - `npm run lint` — ESLint (`eslint-config-next`).
 - `npx tsc --noEmit` — typecheck (no dedicated script).
